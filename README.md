@@ -20,18 +20,18 @@ deterministic dataset. Never enter a token into the application UI.
 ## Build the Databricks layer (Free Edition)
 
 1. In the Databricks workspace, create a notebook and paste/import
-   `databricks/00_setup_and_generate.py`.
+   `databricks_assets/00_setup_and_generate.py`.
 2. Attach serverless compute and run all cells. It creates the eight requested
    Bronze Delta tables in `workspace.kinza_commercial`.
-3. Run `databricks/01_silver_gold.sql` in SQL Editor or a SQL notebook.
-4. Run `databricks/02_governance.sql` to add owners, definitions, certification
+3. Run `databricks_assets/01_silver_gold.sql` in SQL Editor or a SQL notebook.
+4. Run `databricks_assets/02_governance.sql` to add owners, definitions, certification
    properties, and governance metadata.
 5. Open **SQL Warehouses**, start the available warehouse, and copy its server
    hostname and HTTP path from the connection details.
 6. For local development, copy `.streamlit/secrets.toml.example` to
    `.streamlit/secrets.toml` and supply the three settings. The real secrets file
    is gitignored.
-7. Configure a Genie Agent using `databricks/genie_instructions.md`; expose only
+7. Configure a Genie Agent using `databricks_assets/genie_instructions.md`; expose only
    the curated assets listed there.
 
 Free Edition is quota-limited and intended for learning/prototyping rather than
@@ -59,7 +59,7 @@ Expected outcomes:
 - `business_logic.py` — reusable calculations and constrained business Q&A.
 - `db.py` — Databricks SQL connector with explicit local fallback.
 - `validate_stories.py` — executable checks for the demo narrative.
-- `databricks/` — source generation, Silver/Gold SQL, governance, and Genie setup.
+- `databricks_assets/` — source generation, Silver/Gold SQL, governance, and Genie setup.
 - `sql/` — compact standalone SQL examples retained for reference.
 - `app.yaml` — minimal Databricks Apps command.
 
@@ -75,4 +75,3 @@ Expected outcomes:
    to prove ownership, permissions, descriptions, and captured lineage.
 
 See `docs/DEMO_RUNBOOK.md` for the presenter script.
-
