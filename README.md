@@ -14,6 +14,15 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
+On Windows, the safest launcher is:
+
+```powershell
+.\run_app.ps1
+```
+
+It verifies the Databricks connector, installs missing dependencies when needed,
+and opens the application on `http://localhost:8502` using the project `.venv`.
+
 Without Databricks credentials, the app clearly labels itself as using the local
 deterministic dataset. Never enter a token into the application UI.
 
