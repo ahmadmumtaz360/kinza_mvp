@@ -37,7 +37,8 @@ def query(statement: str) -> pd.DataFrame:
         with closing(connection.cursor()) as cursor:
             cursor.execute(statement)
             columns = [column[0] for column in cursor.description]
-    return pd.DataFrame(cursor.fetchall(), columns=columns)
+            rows = cursor.fetchall()
+    return pd.DataFrame(rows, columns=columns)
 
 
 def query_many(statements: dict[str, str]) -> dict[str, pd.DataFrame]:
