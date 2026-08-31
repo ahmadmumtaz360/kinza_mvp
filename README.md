@@ -1,6 +1,9 @@
-# Kinza Commercial Intelligence MVP
+# Kinza Commercial Intelligence — Databricks-backed MVP
 
-A deterministic Streamlit demo that presents commercial value first and keeps the data-platform layer replaceable.
+A deterministic executive decision-intelligence demo with a Databricks lakehouse,
+Unity Catalog governance assets, Genie grounding instructions, and a Streamlit
+presentation layer. It runs locally without credentials and can connect to a
+Databricks SQL warehouse when configured.
 
 ## Run locally
 
@@ -11,7 +14,28 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-The app generates its data in memory, so there is no setup job or database required.
+Without Databricks credentials, the app clearly labels itself as using the local
+deterministic dataset. Never enter a token into the application UI.
+
+## Build the Databricks layer (Free Edition)
+
+1. In the Databricks workspace, create a notebook and paste/import
+   `databricks/00_setup_and_generate.py`.
+2. Attach serverless compute and run all cells. It creates the eight requested
+   Bronze Delta tables in `workspace.kinza_commercial`.
+3. Run `databricks/01_silver_gold.sql` in SQL Editor or a SQL notebook.
+4. Run `databricks/02_governance.sql` to add owners, definitions, certification
+   properties, and governance metadata.
+5. Open **SQL Warehouses**, start the available warehouse, and copy its server
+   hostname and HTTP path from the connection details.
+6. For local development, copy `.streamlit/secrets.toml.example` to
+   `.streamlit/secrets.toml` and supply the three settings. The real secrets file
+   is gitignored.
+7. Configure a Genie Agent using `databricks/genie_instructions.md`; expose only
+   the curated assets listed there.
+
+Free Edition is quota-limited and intended for learning/prototyping rather than
+commercial production. Databricks Apps can stop after 24 hours and be restarted.
 
 ## Validate the planted stories
 
@@ -30,18 +54,25 @@ Expected outcomes:
 
 ## Project shape
 
-- `app.py` — four-screen Streamlit product.
+- `app.py` — six-screen executive product, including Action Center and Data Trust.
 - `data_model.py` — deterministic synthetic source and presentation datasets.
 - `business_logic.py` — reusable calculations and constrained business Q&A.
+- `db.py` — Databricks SQL connector with explicit local fallback.
 - `validate_stories.py` — executable checks for the demo narrative.
-- `sql/` — Databricks-ready table/view definitions for the inventory story.
+- `databricks/` — source generation, Silver/Gold SQL, governance, and Genie setup.
+- `sql/` — compact standalone SQL examples retained for reference.
 - `app.yaml` — minimal Databricks Apps command.
 
-## Databricks migration path
+## Customer demonstration sequence
 
-1. Materialize the eight source datasets from `data_model.py` as Unity Catalog Delta tables.
-2. Build the Gold views in `sql/` and extend the same pattern for executive, sales, distributor, and promotion views.
-3. Replace calls to `build_demo_data()` with SQL Warehouse queries.
-4. Attach the SQL Warehouse as a Databricks App resource and grant the app service principal `USE CATALOG`, `USE SCHEMA`, `SELECT`, and warehouse `CAN USE` permissions.
-5. Keep the constrained Q&A until the curated Gold metrics are stable; then add Genie over Gold tables only.
+1. Executive Overview: identify the Jeddah decline.
+2. Ask Your Business: establish that demand is healthy and supply is constrained.
+3. Inventory Intelligence: show the forecast, shortage, source excess, transfer,
+   and protected revenue.
+4. Action Center: turn the insight into an owned, prioritized decision.
+5. Sales & Distribution: reveal the margin-dilutive promotion and distributor risk.
+6. Data Trust: reveal definitions and lineage in the app, then open Unity Catalog
+   to prove ownership, permissions, descriptions, and captured lineage.
+
+See `docs/DEMO_RUNBOOK.md` for the presenter script.
 
