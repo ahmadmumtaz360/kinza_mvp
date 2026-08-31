@@ -46,6 +46,7 @@ def connection_status() -> tuple[bool, str]:
     try:
         query("SELECT 1 AS connected")
         return True, "Databricks SQL + Unity Catalog"
+    except ModuleNotFoundError:
+        return False, "Databricks connector missing — launch with .venv Python"
     except Exception as exc:
         return False, f"Databricks configured but unavailable: {type(exc).__name__}"
-

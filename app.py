@@ -99,7 +99,10 @@ st.markdown("""
 st.sidebar.title("Kinza")
 page = st.sidebar.radio("Commercial Intelligence", ["Executive Overview", "Sales & Distribution", "Inventory Intelligence", "Action Center", "Ask Your Business", "Data Trust"])
 st.sidebar.caption(f"Demo data as of {AS_OF_DATE:%d %b %Y}")
-st.sidebar.success(f"● {source_label}") if databricks_connected else st.sidebar.info(f"● {source_label}")
+if databricks_connected:
+    st.sidebar.success(f"● {source_label}")
+else:
+    st.sidebar.info(f"● {source_label}")
 
 if page == "Executive Overview":
     st.markdown('<div class="hero"><h1>Executive Overview</h1><p>A decision-ready view of growth, margin and commercial risk.</p></div>', unsafe_allow_html=True)
