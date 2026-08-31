@@ -37,7 +37,27 @@ def query(statement: str) -> pd.DataFrame:
         with closing(connection.cursor()) as cursor:
             cursor.execute(statement)
             columns = [column[0] for column in cursor.description]
-            return pd.DataFrame(cursor.fetchall(), columns=columns)
+    return pd.DataFrame(cursor.fetchall(), columns=columns)
+
+
+def query_many(statements: dict[str, str]) -> dict[str, pd.DataFrame]:
+    """Run several read-only queries in one warehouse session for faster page loads."""
+    if not is_configured():
+        raise RuntimeError("Databricks SQL is not configured")
+    from databricks import sql
+
+    results: dict[str, pd.DataFrame] = {}
+    with closing(sql.connect(
+        server_hostname=_setting("DATABRICKS_SERVER_HOSTNAME"),
+        http_path=_setting("DATABRICKS_HTTP_PATH"),
+        access_token=_setting("DATABRICKS_TOKEN"),
+    )) as connection:
+        with closing(connection.cursor()) as cursor:
+            for name, statement in statements.items():
+                cursor.execute(statement)
+                columns = [column[0] for column in cursor.description]
+                results[name] = pd.DataFrame(cursor.fetchall(), columns=columns)
+    return results
 
 
 def connection_status() -> tuple[bool, str]:
