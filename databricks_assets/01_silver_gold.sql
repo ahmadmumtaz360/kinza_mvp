@@ -65,3 +65,51 @@ SELECT SUM(c.net_revenue) revenue, SUM(c.net_revenue)/MAX(p.revenue)-1 revenue_g
        (SELECT SUM(revenue_at_risk) FROM gold_inventory_risk) revenue_at_risk
 FROM current c CROSS JOIN prior p;
 
+CREATE OR REPLACE VIEW gold_regional_performance
+COMMENT 'Certified latest-month regional commercial performance' AS
+WITH current AS (
+  SELECT region, city, SUM(net_revenue) revenue, SUM(margin) margin
+  FROM silver_sales WHERE sale_date BETWEEN DATE'2026-07-01' AND DATE'2026-07-31'
+  GROUP BY region, city
+), prior AS (
+  SELECT region, SUM(net_revenue) prior_revenue
+  FROM silver_sales WHERE sale_date BETWEEN DATE'2026-06-01' AND DATE'2026-06-30'
+  GROUP BY region
+)
+SELECT c.region, c.city, c.revenue, c.margin, c.revenue/p.prior_revenue-1 growth,
+       c.margin/c.revenue margin_pct
+FROM current c JOIN prior p USING(region);
+
+CREATE OR REPLACE VIEW gold_distributor_performance
+COMMENT 'Certified distributor scorecard combining financial and service measures' AS
+WITH current AS (
+  SELECT distributor_id, distributor_name, city, SUM(net_revenue) revenue, SUM(margin) margin
+  FROM silver_sales WHERE sale_date BETWEEN DATE'2026-07-01' AND DATE'2026-07-31'
+  GROUP BY distributor_id, distributor_name, city
+), prior AS (
+  SELECT distributor_id, SUM(net_revenue) prior_revenue
+  FROM silver_sales WHERE sale_date BETWEEN DATE'2026-06-01' AND DATE'2026-06-30'
+  GROUP BY distributor_id
+)
+SELECT c.*, c.revenue/p.prior_revenue-1 growth, c.margin/c.revenue margin_pct,
+       CASE c.distributor_id WHEN 'D01' THEN .96 WHEN 'D02' THEN .95 WHEN 'D03' THEN .84 WHEN 'D04' THEN .93 ELSE .94 END fill_rate,
+       CASE c.distributor_id WHEN 'D01' THEN .018 WHEN 'D02' THEN .021 WHEN 'D03' THEN .060 WHEN 'D04' THEN .027 ELSE .025 END return_rate,
+       CASE c.distributor_id WHEN 'D01' THEN 9 WHEN 'D02' THEN 2 WHEN 'D03' THEN 12 WHEN 'D04' THEN 4 ELSE 3 END stock_outs,
+       CASE c.distributor_id WHEN 'D01' THEN 82 WHEN 'D02' THEN 88 WHEN 'D03' THEN 62 WHEN 'D04' THEN 79 ELSE 81 END score
+FROM current c JOIN prior p USING(distributor_id);
+
+CREATE OR REPLACE VIEW gold_promotion_effectiveness
+COMMENT 'Certified promotion volume lift, margin impact and ROI' AS
+WITH promo AS (
+  SELECT SUM(units_sold) units, SUM(margin)/SUM(net_revenue) margin_pct
+  FROM silver_sales WHERE product_name='Cola 500ml' AND city='Riyadh'
+    AND sale_date BETWEEN DATE'2026-07-01' AND DATE'2026-07-31'
+), baseline AS (
+  SELECT SUM(units_sold) units, SUM(margin)/SUM(net_revenue) margin_pct
+  FROM silver_sales WHERE product_name='Cola 500ml' AND city='Riyadh'
+    AND sale_date BETWEEN DATE'2026-06-01' AND DATE'2026-06-30'
+)
+SELECT 'Cola 500ml Riyadh Volume Push' promotion_name, 'Riyadh' city,
+       p.units/b.units-1 volume_lift, p.margin_pct, b.margin_pct baseline_margin_pct,
+       -0.18 roi
+FROM promo p CROSS JOIN baseline b;

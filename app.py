@@ -1,15 +1,33 @@
+from dataclasses import replace
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
 from business_logic import QUESTIONS, answer_question, hero_sales_change
 from data_model import AS_OF_DATE, HERO_PRODUCT, build_demo_data
-from db import connection_status
+from db import connection_status, query
 
 
 st.set_page_config(page_title="Kinza Commercial Intelligence", page_icon="🥤", layout="wide")
 data = build_demo_data()
 databricks_connected, source_label = connection_status()
+if databricks_connected:
+    try:
+        risk = query("SELECT * FROM workspace.kinza_commercial.gold_inventory_risk")
+        risk = risk.rename(columns={"forecast_7d_units": "forecast_units"})
+        data = replace(
+            data,
+            executive_kpis=query("SELECT * FROM workspace.kinza_commercial.gold_executive_kpis"),
+            regional_performance=query("SELECT * FROM workspace.kinza_commercial.gold_regional_performance"),
+            distributor_performance=query("SELECT * FROM workspace.kinza_commercial.gold_distributor_performance"),
+            inventory_risk=risk,
+            transfer_recommendations=query("SELECT * FROM workspace.kinza_commercial.gold_transfer_recommendation"),
+            promotion_effectiveness=query("SELECT * FROM workspace.kinza_commercial.gold_promotion_effectiveness"),
+        )
+    except Exception as exc:
+        databricks_connected = False
+        source_label = f"Local fallback ({type(exc).__name__})"
 
 st.markdown("""
 <style>

@@ -19,6 +19,20 @@ deterministic dataset. Never enter a token into the application UI.
 
 ## Build the Databricks layer (Free Edition)
 
+### Automated deployment (recommended)
+
+After configuring `.streamlit/secrets.toml`, run:
+
+```powershell
+.venv\Scripts\python.exe deploy_to_databricks.py
+```
+
+This idempotent command creates and loads all eight Bronze tables, rebuilds the
+Silver/Gold layer, applies supported governance metadata, and verifies the
+8,500-unit transfer and SAR 184,000 protected-revenue result.
+
+### Workspace notebook option
+
 1. In the Databricks workspace, create a notebook and paste/import
    `databricks_assets/00_setup_and_generate.py`.
 2. Attach serverless compute and run all cells. It creates the eight requested
@@ -58,6 +72,7 @@ Expected outcomes:
 - `data_model.py` — deterministic synthetic source and presentation datasets.
 - `business_logic.py` — reusable calculations and constrained business Q&A.
 - `db.py` — Databricks SQL connector with explicit local fallback.
+- `deploy_to_databricks.py` — repeatable end-to-end warehouse deployment.
 - `validate_stories.py` — executable checks for the demo narrative.
 - `databricks_assets/` — source generation, Silver/Gold SQL, governance, and Genie setup.
 - `sql/` — compact standalone SQL examples retained for reference.
